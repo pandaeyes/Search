@@ -1,0 +1,12 @@
+src/search/Configuration.java
+root.properties
+JDIC.log
+Search.jar
+search.data
+search/*
+*.class
+bin/*
+bin/**/*.class
+Thumbs.db
+.settings/
+.settings/*
