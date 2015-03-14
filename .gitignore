@@ -5,6 +5,7 @@ Search.jar
 search.data
 search/*
 *.class
+*.torrent
 bin/*
 bin/**/*.class
 Thumbs.db

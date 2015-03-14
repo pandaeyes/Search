@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.AbstractAction;
@@ -13,30 +14,37 @@ import javax.swing.ActionMap;
 import javax.swing.BoxLayout;
 import javax.swing.InputMap;
 import javax.swing.JButton;
+import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 
 import org.jdesktop.jdic.browser.BrowserEngineManager;
-import org.jdesktop.jdic.browser.WebBrowser;
 import org.jdesktop.jdic.browser.WebBrowserEvent;
 import org.jdesktop.jdic.browser.WebBrowserListenerAdapter;
 
 public class ShowPhotoFrame extends BaseFrame {
 	
-	private WebBrowser browser = null;
+	private JEditorPane browser = null;
 	private List<Link> linkList = null;
 	private int index = 0;
 	private JButton openBut = new JButton(" 打开 ");
+	private JButton downBut = new JButton("下载");
 	private JButton preBut = new JButton("前一页");
 	private JButton nextBut = new JButton("下一页");
 	private JTextField browserUrl = new JTextField();
 	private long time = System.currentTimeMillis();
+	private List<String> downList = new ArrayList<String>();
+	private String jandownRef = null;
+	private Link link = null;
 	
 	public ShowPhotoFrame(List<String> list, Link link, String jandownRef, List<Link> linkList, int index) {
 		super();
 		this.linkList = linkList;
 		this.index = index;
+		this.jandownRef = jandownRef;
+		this.link = link;
 		BrowserEngineManager bem = BrowserEngineManager.instance();
 		bem.setActiveEngine(BrowserEngineManager.IE);
 		initComponents(list, link, jandownRef);
@@ -54,7 +62,7 @@ public class ShowPhotoFrame extends BaseFrame {
 		openBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
-					browser.setURL(getUrl());
+					browser.setPage(getUrl());
 //					browser.setURL(new java.net.URL(SearchService.getInstance().getRoot().trim() + linkList.get(index).getUrl()));
 //					java.awt.Desktop.getDesktop().browse(new java.net.URL(SearchService.getInstance().getRoot().trim() + linkList.get(index).getUrl()).toURI());
 				}catch(Exception ioe){
@@ -65,18 +73,30 @@ public class ShowPhotoFrame extends BaseFrame {
 		preBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				browserUrl.setText("");
+				downBut.setEnabled(false);
 				page("previous");
 			}
 		});
 		nextBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				browserUrl.setText("");
+				downBut.setEnabled(false);
 				page("next");
+			}
+		});
+		downBut.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				if (ShowPhotoFrame.this.jandownRef != null && !downList.contains(ShowPhotoFrame.this.jandownRef)) {
+					downList.add(ShowPhotoFrame.this.jandownRef);
+					DownloadThread thread = new DownloadThread(downList, link, downBut, ShowPhotoFrame.this.jandownRef);
+					thread.start();
+				}
 			}
 		});
 		changeState();
 		navGPanel.add(openBut);
 		navGPanel.add(new Label());
+		navGPanel.add(downBut);
 		navGPanel.add(preBut);
 		navGPanel.add(nextBut);
 //		navGPanel.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 1));
@@ -85,11 +105,13 @@ public class ShowPhotoFrame extends BaseFrame {
 		urlPanel.setLayout(new BorderLayout());
 		urlPanel.add(browserUrl, BorderLayout.CENTER);
 		navPanel.add(urlPanel, BorderLayout.CENTER);
-		browser = new WebBrowser();
-		browser.setContent(buildFile(list, jandownRef));
+		browser = new JEditorPane();
+		browser.setContentType("text/html"); 
+		browser.setText(buildFile(list, jandownRef));
 		JPanel browserPanel = new JPanel();
 		browserPanel.setLayout(new BorderLayout());
-		browserPanel.add(browser, BorderLayout.CENTER);
+		JScrollPane jsPane = new JScrollPane(browser);
+		browserPanel.add(jsPane, BorderLayout.CENTER);
 		defaultPane.add(browserPanel, BorderLayout.CENTER);
 		defaultPane.add(navPanel, BorderLayout.NORTH);
 //		browser.addKeyListener(new KeyListener() {
@@ -126,7 +148,7 @@ public class ShowPhotoFrame extends BaseFrame {
 //			public void keyPressed(KeyEvent e) {
 //			}
 //		});
-		browser.addWebBrowserListener(new WebBrowserListen());
+//		browser.addWebBrowserListener(new WebBrowserListen());
 		InputMap inputMapAncestor = defaultPane.getInputMap();
 		ActionMap actionMap = defaultPane.getActionMap();
 		inputMapAncestor.put(KeyStroke.getKeyStroke(10, 0), "enter");
@@ -155,7 +177,7 @@ public class ShowPhotoFrame extends BaseFrame {
 		actionMap.put("enter", new AbstractAction() {
 			public void actionPerformed(ActionEvent evt) {
 				try {
-					browser.setURL(getUrl());
+					browser.setPage(getUrl());
 				}catch(Exception ioe){
 					ioe.printStackTrace();
 				}
@@ -168,24 +190,24 @@ public class ShowPhotoFrame extends BaseFrame {
 	
 	public String buildFile(List<String> list, String jandownRef) {
 		StringBuffer confBf = new StringBuffer("");
-		confBf.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n");
-		confBf.append("<HTML>\r\n");
-		confBf.append("<HEAD>\r\n");
-		confBf.append("<TITLE> Photo </TITLE>\r\n");
-		confBf.append("<META http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\r\n");
-		confBf.append("</HEAD>\r\n");
-		confBf.append("<BODY>\r\n");
+//		confBf.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n");
+//		confBf.append("<HTML>\r\n");
+//		confBf.append("<HEAD>\r\n");
+//		confBf.append("<TITLE> Photo </TITLE>\r\n");
+//		confBf.append("<META http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\r\n");
+//		confBf.append("</HEAD>\r\n");
+//		confBf.append("<BODY>\r\n");
 		for (String url : list) {
 			confBf.append("<img src='" + url + "'><br><br>\r\n");
 		}
-		if (jandownRef != null) {
-			confBf.append("<form method=POST action='http://www.jandown.com/fetch.php' enctype=multipart/form-data>");
-			confBf.append("<input type=text name=code size=30 value=" + jandownRef + "> &nbsp;");
-			confBf.append("<input type=\"submit\" height=27 width=174 border=0 valign=\"bottom\" value=\"点击下载\">");
-			confBf.append("</form>");
-		}
-		confBf.append("</BODY>");
-		confBf.append("</HTML>\r\n");
+//		if (jandownRef != null) {
+//			confBf.append("<form method=POST action='http://www.jandown.com/fetch.php' enctype=multipart/form-data>");
+//			confBf.append("<input type=text name=code size=30 value=" + jandownRef + "> &nbsp;");
+//			confBf.append("<input type=\"submit\" height=27 width=174 border=0 valign=\"bottom\" value=\"点击下载\">");
+//			confBf.append("</form>");
+//		}
+//		confBf.append("</BODY>");
+//		confBf.append("</HTML>\r\n");
 		String str = null;
 		try {
 			str = new String(confBf.toString().getBytes("UTF-8"));
@@ -198,8 +220,10 @@ public class ShowPhotoFrame extends BaseFrame {
 	public void fireDataChange(List<String> list, Link link, String jandownRef, List<Link> linkList, int index) {
 		this.linkList = linkList;
 		this.index = index;
+		this.jandownRef = jandownRef;
+		this.link = link;
 		changeState();
-		browser.setContent(buildFile(list, jandownRef));
+		browser.setText(buildFile(list, jandownRef));
 		setTitle("图片[" + link.getIndex() + "][" + link.getDate() + "] " + link.getTitle());
 	}
 	
@@ -242,7 +266,13 @@ public class ShowPhotoFrame extends BaseFrame {
 		} else {
 			preBut.setEnabled(true);
 		}
+		if (jandownRef == null) {
+			downBut.setEnabled(false);
+		} else {
+			downBut.setEnabled(true);
+		}
 	}
+	
 	
 	class WebBrowserListen extends WebBrowserListenerAdapter {
 		public void statusTextChange(WebBrowserEvent paramWebBrowserEvent) {
