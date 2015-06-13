@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="Search" default="dist">
+   <target name="clean">
+        <echo>==============</echo>
+        <echo> Search: clean </echo>
+        <echo>==============</echo>
+        <delete dir="${basedir}/dist" />
+        <delete dir="${basedir}/build" />
+    </target>
+    
+    <target name="init" depends="clean">
+        <echo>=============</echo>
+        <echo> Search: init </echo>
+        <echo>=============</echo>
+        <mkdir dir="${basedir}/dist" />
+        <mkdir dir="${basedir}/build" />
+        <mkdir dir="${basedir}/build/classes" />
+    </target>
+    
+    <target name="compile" depends="init">
+        <echo>================</echo>
+        <echo> Search: compile </echo>
+        <echo>================</echo>
+        <javac debug="on" destdir="${basedir}/build/classes" includeantruntime="on">
+            <src path="${basedir}/src"/>
+            <classpath>
+                <fileset dir="${basedir}/lib"/>
+                <fileset dir="${basedir}/lib/djnative"/>
+            </classpath>
+        </javac>
+    </target>
+    
+    <target name="dist" depends="compile">
+        <echo>=============</echo>
+        <echo> Search: dist </echo>
+        <echo>=============</echo>
+        <jar destfile="${basedir}/build/Search.jar" manifest="${basedir}/MANIFEST.MF">
+            <fileset dir="${basedir}/build/classes">
+            </fileset>
+        	<fileset file="${basedir}/../RemoteExec.Common/src/log4j.properties" />
+        </jar>
+        <copy todir="${basedir}/dist">
+            <fileset dir="${basedir}/lib">
+                <include name="*.jar" />
+            </fileset>
+            <fileset dir="${basedir}/lib/djnative">
+                <include name="*.jar" />
+            </fileset>
+            <fileset file="${basedir}/build/Search.jar" />
+        </copy>
+    	<copy todir="${basedir}">
+    		<fileset file="${basedir}/build/Search.jar" />
+    	</copy>
+    </target>
+</project>

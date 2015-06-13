@@ -38,7 +38,7 @@ public class DownloadThread extends Thread {
 		downBut.setText("下载(" + count + ")");
 		downBut.setEnabled(false);
 		String requestUrl = "http://www.jandown.com/fetch.php";
-		String fileName = link.getDate() + "/" + name + ".torrent";
+		String fileName = "temp/" + link.getDate() + "/" + name + ".torrent";
 		Map<String, Object> requestParamsMap = new HashMap<String, Object>();
 		requestParamsMap.put("code", name);
 		StringBuffer params = new StringBuffer();

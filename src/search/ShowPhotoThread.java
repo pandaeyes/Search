@@ -29,6 +29,7 @@ public class ShowPhotoThread extends Thread {
 	}
 	
 	public void run() {
+		System.out.println("==========ShowPhotoThread===run======");
 		List<String> photoList = new ArrayList<String>();
 //		File dir = new File(dirStr);
 //		if (link.getImage() == 1 && dir.exists() && !SearchService.getInstance().getRebuildBox().isSelected()) {
@@ -41,6 +42,8 @@ public class ShowPhotoThread extends Thread {
 //			SearchService.getInstance().setHasNew(true);
 //		}
 		parsePhoto(photoList);
+//		ShowPhotoFrame photoFrame = new ShowPhotoFrame(photoList, link, jandownRef, list, index);
+//		photoFrame.setVisible(true);
 		SearchService.getInstance().showPhotoFrame(photoList, link, jandownRef, list, index);
 	}
 	

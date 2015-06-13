@@ -19,14 +19,17 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 
-import org.jdesktop.jdic.browser.BrowserEngineManager;
-import org.jdesktop.jdic.browser.WebBrowserEvent;
-import org.jdesktop.jdic.browser.WebBrowserListenerAdapter;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
+
+import chrriis.dj.nativeswing.swtimpl.NativeInterface;
+import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
 
 public class ShowPhotoFrame extends BaseFrame {
 	
-	private JEditorPane browser = null;
+//	private JEditorPane browser = null;
+	private JWebBrowser browser = null;
 	private List<Link> linkList = null;
 	private int index = 0;
 	private JButton openBut = new JButton(" 打开 ");
@@ -45,8 +48,6 @@ public class ShowPhotoFrame extends BaseFrame {
 		this.index = index;
 		this.jandownRef = jandownRef;
 		this.link = link;
-		BrowserEngineManager bem = BrowserEngineManager.instance();
-		bem.setActiveEngine(BrowserEngineManager.IE);
 		initComponents(list, link, jandownRef);
 	}
 
@@ -62,7 +63,7 @@ public class ShowPhotoFrame extends BaseFrame {
 		openBut.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				try {
-					browser.setPage(getUrl());
+					browser.navigate(getUrlTxt());
 //					browser.setURL(new java.net.URL(SearchService.getInstance().getRoot().trim() + linkList.get(index).getUrl()));
 //					java.awt.Desktop.getDesktop().browse(new java.net.URL(SearchService.getInstance().getRoot().trim() + linkList.get(index).getUrl()).toURI());
 				}catch(Exception ioe){
@@ -105,9 +106,15 @@ public class ShowPhotoFrame extends BaseFrame {
 		urlPanel.setLayout(new BorderLayout());
 		urlPanel.add(browserUrl, BorderLayout.CENTER);
 		navPanel.add(urlPanel, BorderLayout.CENTER);
-		browser = new JEditorPane();
-		browser.setContentType("text/html"); 
-		browser.setText(buildFile(list, jandownRef));
+		browser = new JWebBrowser();
+//		browser.navigate("http://www.baidu.com");
+		browser.setButtonBarVisible(false);
+		browser.setMenuBarVisible(false);
+		browser.setBarsVisible(false);
+		browser.setStatusBarVisible(false);
+//		browser.setEditable(false);
+//		browser.setContentType("text/html"); 
+//		browser.setText(buildFile(list, jandownRef));
 		JPanel browserPanel = new JPanel();
 		browserPanel.setLayout(new BorderLayout());
 		JScrollPane jsPane = new JScrollPane(browser);
@@ -177,7 +184,7 @@ public class ShowPhotoFrame extends BaseFrame {
 		actionMap.put("enter", new AbstractAction() {
 			public void actionPerformed(ActionEvent evt) {
 				try {
-					browser.setPage(getUrl());
+					browser.navigate(getUrlTxt());
 				}catch(Exception ioe){
 					ioe.printStackTrace();
 				}
@@ -191,12 +198,12 @@ public class ShowPhotoFrame extends BaseFrame {
 	public String buildFile(List<String> list, String jandownRef) {
 		StringBuffer confBf = new StringBuffer("");
 //		confBf.append("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0 Transitional//EN\">\r\n");
-//		confBf.append("<HTML>\r\n");
-//		confBf.append("<HEAD>\r\n");
-//		confBf.append("<TITLE> Photo </TITLE>\r\n");
-//		confBf.append("<META http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\r\n");
-//		confBf.append("</HEAD>\r\n");
-//		confBf.append("<BODY>\r\n");
+		confBf.append("<HTML>\r\n");
+		confBf.append("<HEAD>\r\n");
+		confBf.append("<TITLE> Photo </TITLE>\r\n");
+		confBf.append("<META http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"/>\r\n");
+		confBf.append("</HEAD>\r\n");
+		confBf.append("<BODY>\r\n");
 		for (String url : list) {
 			confBf.append("<img src='" + url + "'><br><br>\r\n");
 		}
@@ -206,14 +213,15 @@ public class ShowPhotoFrame extends BaseFrame {
 //			confBf.append("<input type=\"submit\" height=27 width=174 border=0 valign=\"bottom\" value=\"点击下载\">");
 //			confBf.append("</form>");
 //		}
-//		confBf.append("</BODY>");
-//		confBf.append("</HTML>\r\n");
+		confBf.append("</BODY>");
+		confBf.append("</HTML>\r\n");
 		String str = null;
 		try {
 			str = new String(confBf.toString().getBytes("UTF-8"));
 		} catch (UnsupportedEncodingException e) {
 			str = confBf.toString();
 		}
+//		System.out.println(str);
 		return str;
 	}
 	
@@ -223,7 +231,7 @@ public class ShowPhotoFrame extends BaseFrame {
 		this.jandownRef = jandownRef;
 		this.link = link;
 		changeState();
-		browser.setText(buildFile(list, jandownRef));
+		browser.setHTMLContent(buildFile(list, jandownRef));
 		setTitle("图片[" + link.getIndex() + "][" + link.getDate() + "] " + link.getTitle());
 	}
 	
@@ -235,13 +243,15 @@ public class ShowPhotoFrame extends BaseFrame {
 	private void page(String type) {
 		if ("previous".equals(type)) {
 			if (index > 0) {
-				ShowPhotoThread thread = new ShowPhotoThread(linkList, index - 1);
-				thread.start();
+				SwingUtilities.invokeLater(new ShowPhotoThread(linkList, index - 1));
+//				ShowPhotoThread thread = new ShowPhotoThread(linkList, index - 1);
+//				thread.start();
 			}
 		} else {
 			if ((index + 1) < linkList.size()) {
-				ShowPhotoThread thread = new ShowPhotoThread(linkList, index + 1);
-				thread.start();
+				SwingUtilities.invokeLater(new ShowPhotoThread(linkList, index + 1));
+//				ShowPhotoThread thread = new ShowPhotoThread(linkList, index + 1);
+//				thread.start();
 			}
 		}
 	}
@@ -253,6 +263,13 @@ public class ShowPhotoFrame extends BaseFrame {
 		} else {
 			URL nrl = new java.net.URL(SearchService.getInstance().getRoot().trim() + linkList.get(index).getUrl());
 			return nrl;
+		}
+	}
+	public String getUrlTxt() throws Exception{
+		if (browserUrl.getText() != null && browserUrl.getText().trim().length() > 0) {
+			return browserUrl.getText().trim();
+		} else {
+			return SearchService.getInstance().getRoot().trim() + linkList.get(index).getUrl();
 		}
 	}
 	private void changeState() {
@@ -270,13 +287,6 @@ public class ShowPhotoFrame extends BaseFrame {
 			downBut.setEnabled(false);
 		} else {
 			downBut.setEnabled(true);
-		}
-	}
-	
-	
-	class WebBrowserListen extends WebBrowserListenerAdapter {
-		public void statusTextChange(WebBrowserEvent paramWebBrowserEvent) {
-			ShowPhotoFrame.this.getCenterPane().requestFocus();
 		}
 	}
 }

@@ -29,8 +29,11 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
+import chrriis.common.UIUtils;
+import chrriis.dj.nativeswing.swtimpl.NativeInterface;
 import sun.swing.table.DefaultTableCellHeaderRenderer;
 
 public class MainFrame extends JFrame {
@@ -109,6 +112,7 @@ public class MainFrame extends JFrame {
 				runSearch();
 			}
 		});
+		NativeInterface.open();
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e){
 				if (e.getClickCount() == 2) {
@@ -116,8 +120,12 @@ public class MainFrame extends JFrame {
 					Link link = tableModel.getList().get(row);
 					int column =((JTable)e.getSource()).getSelectedColumn();
 					if (column == 3) {
-						ShowPhotoThread thread = new ShowPhotoThread(tableModel.getList(), row);
-						thread.start();
+						
+//						ShowPhotoThread thread = new ShowPhotoThread(tableModel.getList(), row);
+//						thread.start();
+//						TestFrame thread = new TestFrame(tableModel.getList(), row);
+//						thread.start();
+						SwingUtilities.invokeLater(new ShowPhotoThread(tableModel.getList(), row));
 					} else {
 						try {
 							java.awt.Desktop.getDesktop().browse(new java.net.URL(root.getText().trim() + link.getUrl()).toURI());
@@ -128,6 +136,7 @@ public class MainFrame extends JFrame {
 				}
 			}
 		});
+		NativeInterface.runEventPump();
 		search.addKeyListener(new MyKeyListener());
 		page.addKeyListener(new MyKeyListener());
 		JPanel listPane = new JPanel();

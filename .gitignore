@@ -7,6 +7,9 @@ search/*
 *.class
 *.torrent
 bin/*
+build/*
+dist/*
+temp/*
 bin/**/*.class
 Thumbs.db
 .settings/
