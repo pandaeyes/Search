@@ -114,7 +114,7 @@ public class ShowPhotoFrame extends BaseFrame {
 		browser.setStatusBarVisible(false);
 //		browser.setEditable(false);
 //		browser.setContentType("text/html"); 
-//		browser.setText(buildFile(list, jandownRef));
+		browser.setHTMLContent(buildFile(list, jandownRef));
 		JPanel browserPanel = new JPanel();
 		browserPanel.setLayout(new BorderLayout());
 		JScrollPane jsPane = new JScrollPane(browser);
