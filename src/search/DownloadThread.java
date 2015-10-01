@@ -30,7 +30,7 @@ public class DownloadThread extends Thread {
 	}
 	
 	public void run() {
-		File dir = new File(link.getDate());
+		File dir = new File( "temp/" + link.getDate());
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}

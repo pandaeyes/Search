@@ -8,7 +8,6 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import chrriis.dj.nativeswing.swtimpl.components.JWebBrowser;
-import browser.EagleBrowser;
 
 public class TestFrame extends Thread {
 	private Link link = null;
